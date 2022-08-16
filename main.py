@@ -5,9 +5,11 @@ from ShazamAPI import Shazam
 import requests
 from PIL import Image, ImageFilter, ImageEnhance
 from pygame.locals import *
+import os
 
 if __name__ == '__main__':
 
+    os.environ["DISPLAY"] = ":0"
     pygame.init()
 
     "Set screen"
