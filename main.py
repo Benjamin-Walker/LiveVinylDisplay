@@ -6,6 +6,7 @@ import requests
 from PIL import Image, ImageFilter, ImageEnhance
 from pygame.locals import *
 import os
+import io
 
 if __name__ == '__main__':
 
@@ -26,14 +27,18 @@ if __name__ == '__main__':
     count = 0
     rest_time = 3
 
+    img_size = (850, 850)
+    blur_size = (1280, 1024)
+
+    img_loaded_size = img_size
+    blur_loaded_size = blur_size
+
     img = Image.open('please-stand-by.jpg')
-    img = img.resize((850, 850))
-    img.save('coverart.jpg')
-    blur = img.filter(ImageFilter.GaussianBlur(5))
-    blur = blur.resize((1280, 1024))
+    img = img.resize(img_size)
+    blur = img.filter(ImageFilter.GaussianBlur(10))
+    blur = blur.resize(blur_size)
     enhancer = ImageEnhance.Brightness(blur)
     blur = enhancer.enhance(0.8)
-    blur.save('blur.jpg')
 
     ident = ''
     title = ''
@@ -48,10 +53,10 @@ if __name__ == '__main__':
         sd.wait()  # Wait until recording is finished
         print("Finished")
         if myrecording.max() > 0.02:
-            write('output.wav', fs, myrecording)  # Save as WAV file
-
-            mp3_file_content_to_recognize = open('output.wav', 'rb').read()
-            shazam = Shazam(mp3_file_content_to_recognize)
+            bytes_wav = bytes()
+            byte_io = io.BytesIO(bytes_wav)
+            write(byte_io, fs, myrecording)
+            shazam = Shazam(byte_io.read())
             recognize_generator = shazam.recognizeSong()
             data = next(recognize_generator)
 
@@ -61,28 +66,27 @@ if __name__ == '__main__':
             else:
                 title = data[1]['track']['title']
                 artist = data[1]['track']['subtitle']
-                coverart = requests.get(data[1]['track']['images']['coverarthq']).content
-                with open('coverart.jpg', 'wb') as handler:
-                    handler.write(coverart)
-                img = Image.open('coverart.jpg')
+                response = requests.get(data[1]['track']['images']['coverarthq'])
+                img = Image.open(io.BytesIO(response.content))
                 # Applying GaussianBlur filter
                 blur = img.filter(ImageFilter.GaussianBlur(10))
                 enhancer = ImageEnhance.Brightness(blur)
                 blur = enhancer.enhance(0.8)
-                blur.save('blur.jpg')
                 count = 0
+                img_loaded_size = img.size
+                blur_loaded_size = blur.size
         else:
             print('no noise detected')
             count += 1
 
         if count < rest_time:
             screen.fill((0, 0, 0))
-            blur = pygame.image.load("blur.jpg").convert_alpha()
-            blur = pygame.transform.scale(blur, (1280, 1024))
-            screen.blit(blur, (0, 0))
-            img = pygame.image.load("coverart.jpg").convert_alpha()
-            img = pygame.transform.scale(img, (850, 850))
-            screen.blit(img, (215, 25))
+            blur_screen = pygame.image.fromstring(blur.tobytes("raw", 'RGB'), img_loaded_size, 'RGB')
+            blur_screen = pygame.transform.scale(blur_screen, blur_size)
+            screen.blit(blur_screen, (0, 0))
+            img_screen = pygame.image.fromstring(img.tobytes("raw", 'RGB'), blur_loaded_size, 'RGB')
+            img_screen = pygame.transform.scale(img_screen, img_size)
+            screen.blit(img_screen, (215, 25))
 
             font = pygame.font.Font('freesansbold.ttf', 46)
             text = font.render(title, True, (255, 255, 255))
@@ -98,19 +102,21 @@ if __name__ == '__main__':
         else:
             img = Image.open('please-stand-by.jpg')
             img = img.resize((850, 850))
-            blur = img.filter(ImageFilter.GaussianBlur(5))
+            blur = img.filter(ImageFilter.GaussianBlur(10))
             blur = blur.resize((1280, 1024))
             enhancer = ImageEnhance.Brightness(blur)
             blur = enhancer.enhance(0.8)
-            blur.save('blur.jpg')
-            img.save('coverart.jpg')
+            img_loaded_size = img.size
+            blur_loaded_size = blur.size
 
-            screen.fill((0, 0, 0))
-            blur = pygame.image.load("blur.jpg").convert_alpha()
-            blur = pygame.transform.scale(blur, (1280, 1024))
-            screen.blit(blur, (0, 0))
-            img_ = pygame.image.load("coverart.jpg").convert_alpha()
-            screen.blit(img_, (215, 25))
+            blur_screen = pygame.image.fromstring(blur.tobytes("raw", 'RGB'),
+                                                  blur_loaded_size, 'RGB')
+            blur_screen = pygame.transform.scale(blur_screen, blur_size)
+            screen.blit(blur_screen, (0, 0))
+            img_screen = pygame.image.fromstring(img.tobytes("raw", 'RGB'),
+                                                 img_loaded_size, 'RGB')
+            img_screen = pygame.transform.scale(img_screen, img_size)
+            screen.blit(img_screen, (215, 25))
 
         pygame.display.update()
 
