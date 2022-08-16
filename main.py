@@ -4,27 +4,19 @@ import pygame
 from ShazamAPI import Shazam
 import requests
 from PIL import Image, ImageFilter, ImageEnhance
-
-pygame.init()
-
-"Set screen"
-screen = pygame.display.set_mode((1280, 1024), 0, 32)
-
-"Fill background"
-background = pygame.Surface(screen.get_size())
-background = background.convert()
-background.fill((255, 255, 255))
-
-
-def disp_images():
-    blur = pygame.image.load("blur.jpg").convert_alpha()
-    blur = pygame.transform.scale(blur, (1280, 1024))
-    screen.blit(blur, (0, 0))
-    img_ = pygame.image.load("coverart.jpg").convert_alpha()
-    screen.blit(img_, (215, 25))
-
+from pygame.locals import *
 
 if __name__ == '__main__':
+
+    pygame.init()
+
+    "Set screen"
+    screen = pygame.display.set_mode((1280, 1024), pygame.FULLSCREEN)
+
+    "Fill background"
+    background = pygame.Surface(screen.get_size())
+    background = background.convert()
+    background.fill((255, 255, 255))
 
     fs = 44100  # this is the frequency sampling; also: 4999, 64000
     seconds = 10  # Duration of recording
@@ -45,7 +37,9 @@ if __name__ == '__main__':
     title = ''
     artist = ''
 
-    while True:
+    running = True
+
+    while running:
 
         myrecording = sd.rec(int(seconds * fs), samplerate=fs, channels=1)
         print("Recording")
@@ -80,7 +74,13 @@ if __name__ == '__main__':
             count += 1
 
         if count < rest_time:
-            disp_images()
+            screen.fill((0, 0, 0))
+            blur = pygame.image.load("blur.jpg").convert_alpha()
+            blur = pygame.transform.scale(blur, (1280, 1024))
+            screen.blit(blur, (0, 0))
+            img = pygame.image.load("coverart.jpg").convert_alpha()
+            img = pygame.transform.scale(img, (850, 850))
+            screen.blit(img, (215, 25))
 
             font = pygame.font.Font('freesansbold.ttf', 46)
             text = font.render(title, True, (255, 255, 255))
@@ -103,7 +103,21 @@ if __name__ == '__main__':
             blur.save('blur.jpg')
             img.save('coverart.jpg')
 
-            disp_images()
-
+            screen.fill((0, 0, 0))
+            blur = pygame.image.load("blur.jpg").convert_alpha()
+            blur = pygame.transform.scale(blur, (1280, 1024))
+            screen.blit(blur, (0, 0))
+            img_ = pygame.image.load("coverart.jpg").convert_alpha()
+            screen.blit(img_, (215, 25))
 
         pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                running = False
+            elif event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    pygame.quit()
+                    running = False
+
+    pygame.quit()
