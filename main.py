@@ -14,8 +14,8 @@ if __name__ == '__main__':
     pygame.init()
 
     "Set screen"
-    screen = pygame.display.set_mode((1280, 1024), pygame.FULLSCREEN)
-
+    # screen = pygame.display.set_mode((1280, 1024), pygame.FULLSCREEN)
+    screen = pygame.display.set_mode((1280, 1024))
     "Fill background"
     background = pygame.Surface(screen.get_size())
     background = background.convert()
@@ -28,17 +28,20 @@ if __name__ == '__main__':
     rest_time = 3
 
     img_size = (850, 850)
-    blur_size = (1280, 1024)
+    background_size = (1280, 1024)
 
     img_loaded_size = img_size
-    blur_loaded_size = blur_size
+    background_loaded_size = background_size
 
-    img = Image.open('please-stand-by.jpg')
-    img = img.resize(img_size)
-    blur = img.filter(ImageFilter.GaussianBlur(10))
-    blur = blur.resize(blur_size)
-    enhancer = ImageEnhance.Brightness(blur)
-    blur = enhancer.enhance(0.8)
+    img = Image.open('retro_november.jpg')
+    img = img.resize(background_size)
+    img_screen = pygame.image.fromstring(img.tobytes("raw", 'RGB'),
+                                         background_loaded_size, 'RGB')
+    img_screen = pygame.transform.scale(img_screen, background_size)
+    screen.blit(img_screen, (0, 0))
+    song_detect = False
+
+    pygame.display.update()
 
     ident = ''
     title = ''
@@ -63,6 +66,8 @@ if __name__ == '__main__':
             if len(data[1]['matches']) == 0:
                 print('no song detected')
                 count += 1
+                if count > rest_time:
+                    song_detect = False
             else:
                 title = data[1]['track']['title']
                 artist = data[1]['track']['subtitle']
@@ -74,17 +79,20 @@ if __name__ == '__main__':
                 blur = enhancer.enhance(0.8)
                 count = 0
                 img_loaded_size = img.size
-                blur_loaded_size = blur.size
+                background_loaded_size = blur.size
+                song_detect = True
         else:
             print('no noise detected')
             count += 1
+            if count > rest_time:
+                song_detect = False
 
-        if count < rest_time:
+        if song_detect:
             screen.fill((0, 0, 0))
-            blur_screen = pygame.image.fromstring(blur.tobytes("raw", 'RGB'), img_loaded_size, 'RGB')
-            blur_screen = pygame.transform.scale(blur_screen, blur_size)
-            screen.blit(blur_screen, (0, 0))
-            img_screen = pygame.image.fromstring(img.tobytes("raw", 'RGB'), blur_loaded_size, 'RGB')
+            background_screen = pygame.image.fromstring(blur.tobytes("raw", 'RGB'), img_loaded_size, 'RGB')
+            background_screen = pygame.transform.scale(background_screen, background_size)
+            screen.blit(background_screen, (0, 0))
+            img_screen = pygame.image.fromstring(img.tobytes("raw", 'RGB'), background_loaded_size, 'RGB')
             img_screen = pygame.transform.scale(img_screen, img_size)
             screen.blit(img_screen, (215, 25))
 
@@ -100,23 +108,13 @@ if __name__ == '__main__':
             textRect.center = (640, 975)
             screen.blit(text, textRect)
         else:
-            img = Image.open('please-stand-by.jpg')
-            img = img.resize((850, 850))
-            blur = img.filter(ImageFilter.GaussianBlur(10))
-            blur = blur.resize((1280, 1024))
-            enhancer = ImageEnhance.Brightness(blur)
-            blur = enhancer.enhance(0.8)
+            img = Image.open('retro_november.jpg')
+            img = img.resize((1280, 1024))
             img_loaded_size = img.size
-            blur_loaded_size = blur.size
-
-            blur_screen = pygame.image.fromstring(blur.tobytes("raw", 'RGB'),
-                                                  blur_loaded_size, 'RGB')
-            blur_screen = pygame.transform.scale(blur_screen, blur_size)
-            screen.blit(blur_screen, (0, 0))
             img_screen = pygame.image.fromstring(img.tobytes("raw", 'RGB'),
                                                  img_loaded_size, 'RGB')
-            img_screen = pygame.transform.scale(img_screen, img_size)
-            screen.blit(img_screen, (215, 25))
+            img_screen = pygame.transform.scale(img_screen, background_size)
+            screen.blit(img_screen, (0, 0))
 
         pygame.display.update()
 
