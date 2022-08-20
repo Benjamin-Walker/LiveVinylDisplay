@@ -14,8 +14,10 @@ if __name__ == '__main__':
     pygame.init()
 
     "Set screen"
-    # screen = pygame.display.set_mode((1280, 1024), pygame.FULLSCREEN)
-    screen = pygame.display.set_mode((1280, 1024))
+    screen = pygame.display.set_mode((1280, 1024), pygame.FULLSCREEN)
+
+    pygame.mouse.set_cursor((8, 8), (0, 0), (0, 0, 0, 0, 0, 0, 0, 0),
+                                 (0, 0, 0, 0, 0, 0, 0, 0))
     "Fill background"
     background = pygame.Surface(screen.get_size())
     background = background.convert()
