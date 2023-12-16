@@ -1,3 +1,5 @@
+import random
+
 from scipy.io.wavfile import write
 import sounddevice as sd
 import pygame
@@ -35,7 +37,9 @@ if __name__ == '__main__':
     img_loaded_size = img_size
     background_loaded_size = background_size
 
-    img = Image.open('retro_november.jpg')
+    images = os.listdir('christmas_images')
+    choice = random.choice(images)
+    img = Image.open('christmas_images/' + choice)
     img = img.resize(background_size)
     img_screen = pygame.image.fromstring(img.tobytes("raw", 'RGB'),
                                          background_loaded_size, 'RGB')
@@ -110,7 +114,9 @@ if __name__ == '__main__':
             textRect.center = (640, 975)
             screen.blit(text, textRect)
         else:
-            img = Image.open('retro_november.jpg')
+            images = os.listdir('christmas_images')
+            choice = random.choice(images)
+            img = Image.open('christmas_images/' + choice)
             img = img.resize((1280, 1024))
             img_loaded_size = img.size
             img_screen = pygame.image.fromstring(img.tobytes("raw", 'RGB'),
